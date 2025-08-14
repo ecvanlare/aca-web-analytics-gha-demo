@@ -39,7 +39,7 @@ variable "tags" {
 variable "aca_name" {
   description = "Name for the Container App"
   type        = string
-  default     = "umami-web-analytics"
+  default     = "web-analytics"
 }
 
 variable "aca_cpu" {
@@ -57,7 +57,7 @@ variable "aca_memory" {
 variable "aca_image_name" {
   description = "Docker image name for the container app"
   type        = string
-  default     = "umami"
+  default     = "web-analytics"
 }
 
 variable "aca_image_tag" {

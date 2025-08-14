@@ -82,7 +82,7 @@ output "keyvault_identity_client_id" {
 
 # ACA Outputs
 output "aca_url" {
-  description = "URL of the Container App (Umami)"
+  description = "URL of the Container App (Web Analytics)"
   value       = module.aca.aca_url
 }
 

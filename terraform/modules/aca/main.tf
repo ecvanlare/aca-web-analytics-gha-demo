@@ -27,7 +27,7 @@ resource "azurerm_container_app" "aca" {
       image  = var.image
       cpu    = var.cpu
       memory = var.memory
-      
+
       dynamic "env" {
         for_each = var.environment_variables
         content {
@@ -35,22 +35,22 @@ resource "azurerm_container_app" "aca" {
           value = env.value
         }
       }
-      
+
       dynamic "env" {
         for_each = var.secrets
         content {
-          name = env.value.name
+          name        = env.value.name
           secret_name = env.value.name
         }
       }
     }
   }
-  
+
   registry {
     server   = var.registry_server
     identity = var.registry_identity
   }
-  
+
   ingress {
     allow_insecure_connections = var.allow_insecure_connections
     external_enabled           = var.external_enabled
