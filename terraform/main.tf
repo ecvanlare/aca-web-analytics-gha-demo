@@ -15,11 +15,10 @@ module "resource_group" {
 # IDENTITY MANAGEMENT
 # =============================================================================
 
-# Create managed identities for ACR pull and Key Vault access
+# Create managed identity for ACR pull access
 resource "azurerm_user_assigned_identity" "identities" {
   for_each = {
     acr_pull = "web-analytics-acr-pull"
-    keyvault = "web-analytics-keyvault"
   }
 
   name                = each.value
@@ -28,19 +27,7 @@ resource "azurerm_user_assigned_identity" "identities" {
   tags                = var.tags
 }
 
-# Azure AD Groups for Key Vault access
-resource "azuread_group" "keyvault_groups" {
-  for_each = {
-    admins     = { name = var.admin_group_name, description = "Key Vault Administrators" }
-    developers = { name = var.developer_group_name, description = "Key Vault Developers - Can manage secrets" }
-    viewers    = { name = var.viewer_group_name, description = "Key Vault Viewers - Read-only access" }
-  }
 
-  display_name     = each.value.name
-  mail_nickname    = each.value.name
-  security_enabled = true
-  description      = each.value.description
-}
 
 # =============================================================================
 # NETWORK INFRASTRUCTURE
@@ -105,15 +92,7 @@ module "postgresql" {
 # ROLE ASSIGNMENTS & PERMISSIONS
 # =============================================================================
 
-# Role assignments configuration
-locals {
-  # Key Vault role assignments
-  keyvault_role_assignments = {
-    admins     = { group = "admins", role = var.keyvault_admin_role }
-    developers = { group = "developers", role = var.keyvault_secrets_officer_role }
-    viewers    = { group = "viewers", role = var.keyvault_reader_role }
-  }
-}
+
 
 # Identity assignment for ACR pull operations (for ACA)
 module "acr_pull" {
@@ -123,46 +102,6 @@ module "acr_pull" {
   role_definition_name = var.acr_pull_role_name
   principal_id         = azurerm_user_assigned_identity.identities["acr_pull"].principal_id
   description          = var.role_assignment_defaults.description
-}
-
-# =============================================================================
-# SECURITY & SECRETS MANAGEMENT
-# =============================================================================
-
-# Key Vault Module for storing all sensitive values
-module "keyvault" {
-  source = "./modules/keyvault"
-
-  key_vault_name             = "kv-${var.environment}-${var.project_name}"
-  location                   = var.location
-  resource_group_name        = module.resource_group.resource_group_name
-  managed_identity_object_id = azurerm_user_assigned_identity.identities["keyvault"].principal_id
-  enable_rbac_authorization  = true
-
-  # Key Vault Configuration
-  soft_delete_retention_days = var.keyvault_soft_delete_retention_days
-  purge_protection_enabled   = var.keyvault_purge_protection_enabled
-  sku_name                   = var.keyvault_sku_name
-  network_acls               = var.keyvault_network_acls
-
-  # Role Names
-  terraform_role_name        = var.keyvault_terraform_role_name
-  managed_identity_role_name = var.keyvault_managed_identity_role_name
-
-  tags = var.tags
-}
-
-# Key Vault Role Assignments
-module "keyvault_user_group_roles" {
-  source   = "./modules/identity"
-  for_each = local.keyvault_role_assignments
-
-  scope                = module.keyvault.key_vault_id
-  role_definition_name = each.value.role
-  principal_id         = azuread_group.keyvault_groups[each.value.group].object_id
-  description          = var.role_assignment_defaults.description
-
-  depends_on = [module.keyvault]
 }
 
 # =============================================================================
@@ -199,11 +138,11 @@ module "aca" {
   # Secrets
   secrets = {
     app_secret = {
-      name  = "APP_SECRET"
+      name  = "app-secret"
       value = var.aca_app_secret
     }
     database_password = {
-      name  = "DATABASE_PASSWORD"
+      name  = "database-password"
       value = var.postgresql_administrator_password
     }
   }

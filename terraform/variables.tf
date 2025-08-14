@@ -163,7 +163,7 @@ variable "subnets" {
     private = {
       name              = "snet-private"
       address_prefixes  = ["10.0.17.0/24"]
-      service_endpoints = ["Microsoft.ContainerRegistry", "Microsoft.KeyVault", "Microsoft.Sql"]
+      service_endpoints = ["Microsoft.ContainerRegistry", "Microsoft.Sql"]
     }
   }
 }
@@ -200,19 +200,9 @@ variable "network_security_groups" {
           destination_address_prefix = "AzureContainerRegistry"
           description                = "Allow outbound HTTPS to ACR"
         }
-        allow_outbound_keyvault = {
-          priority                   = 200
-          direction                  = "Outbound"
-          access                     = "Allow"
-          protocol                   = "Tcp"
-          source_port_range          = "*"
-          destination_port_range     = "443"
-          source_address_prefix      = "VirtualNetwork"
-          destination_address_prefix = "AzureKeyVault"
-          description                = "Allow outbound HTTPS to KeyVault"
-        }
+
         allow_postgresql = {
-          priority                   = 300
+          priority                   = 200
           direction                  = "Inbound"
           access                     = "Allow"
           protocol                   = "Tcp"
@@ -223,7 +213,7 @@ variable "network_security_groups" {
           description                = "Allow PostgreSQL access from VNet"
         }
         deny_internet = {
-          priority                   = 4000
+          priority                   = 3000
           direction                  = "Outbound"
           access                     = "Deny"
           protocol                   = "*"
@@ -280,87 +270,6 @@ variable "postgresql_storage_mb" {
   description = "Storage size in MB for PostgreSQL"
   type        = number
   default     = 32768
-}
-
-# Azure AD Group Names
-variable "admin_group_name" {
-  description = "Name for the Key Vault admin group"
-  type        = string
-  default     = "keyvault-admins"
-}
-
-variable "developer_group_name" {
-  description = "Name for the Key Vault developer group"
-  type        = string
-  default     = "keyvault-developers"
-}
-
-variable "viewer_group_name" {
-  description = "Name for the Key Vault viewer group"
-  type        = string
-  default     = "keyvault-viewers"
-}
-
-# Key Vault RBAC Role Names
-variable "keyvault_admin_role" {
-  description = "Azure RBAC role for admin group in Key Vault"
-  type        = string
-  default     = "Key Vault Administrator"
-}
-
-variable "keyvault_secrets_officer_role" {
-  description = "Azure RBAC role for developer group in Key Vault"
-  type        = string
-  default     = "Key Vault Secrets Officer"
-}
-
-variable "keyvault_reader_role" {
-  description = "Azure RBAC role for viewer group in Key Vault"
-  type        = string
-  default     = "Key Vault Reader"
-}
-
-# Key Vault Configuration Variables
-variable "keyvault_soft_delete_retention_days" {
-  description = "Soft delete retention days for Key Vault"
-  type        = number
-  default     = 7
-}
-
-variable "keyvault_purge_protection_enabled" {
-  description = "Enable purge protection for Key Vault"
-  type        = bool
-  default     = false
-}
-
-variable "keyvault_sku_name" {
-  description = "SKU name for Key Vault"
-  type        = string
-  default     = "standard"
-}
-
-variable "keyvault_network_acls" {
-  description = "Network ACLs configuration for Key Vault"
-  type = object({
-    default_action = string
-    bypass         = string
-  })
-  default = {
-    default_action = "Allow"
-    bypass         = "AzureServices"
-  }
-}
-
-variable "keyvault_terraform_role_name" {
-  description = "Azure RBAC role name for Terraform access to Key Vault"
-  type        = string
-  default     = "Key Vault Administrator"
-}
-
-variable "keyvault_managed_identity_role_name" {
-  description = "Azure RBAC role name for managed identity access to Key Vault"
-  type        = string
-  default     = "Key Vault Secrets User"
 }
 
 # Identity Role Names

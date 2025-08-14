@@ -48,17 +48,6 @@ output "postgresql_connection_string" {
   sensitive   = true
 }
 
-# Key Vault Outputs
-output "keyvault_name" {
-  description = "The name of the Key Vault"
-  value       = module.keyvault.key_vault_name
-}
-
-output "keyvault_uri" {
-  description = "The URI of the Key Vault"
-  value       = module.keyvault.key_vault_uri
-}
-
 # Managed Identity Outputs
 output "acr_pull_identity_principal_id" {
   description = "Principal ID of the ACR pull managed identity"
@@ -68,16 +57,6 @@ output "acr_pull_identity_principal_id" {
 output "acr_pull_identity_client_id" {
   description = "Client ID of the ACR pull managed identity"
   value       = azurerm_user_assigned_identity.identities["acr_pull"].client_id
-}
-
-output "keyvault_identity_principal_id" {
-  description = "Principal ID of the Key Vault managed identity"
-  value       = azurerm_user_assigned_identity.identities["keyvault"].principal_id
-}
-
-output "keyvault_identity_client_id" {
-  description = "Client ID of the Key Vault managed identity"
-  value       = azurerm_user_assigned_identity.identities["keyvault"].client_id
 }
 
 # ACA Outputs
