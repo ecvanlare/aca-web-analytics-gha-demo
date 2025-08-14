@@ -21,6 +21,11 @@ resource "azurerm_container_app" "aca" {
   resource_group_name          = var.resource_group_name
   revision_mode                = var.revision_mode
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.registry_identity]
+  }
+
   template {
     container {
       name   = "${var.name}-container"
