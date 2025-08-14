@@ -1,0 +1,26 @@
+name: Destroy Infrastructure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform_destroy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Terraform Destroy
+        uses: ./.github/actions/terraform
+        with:
+          terraform_command: destroy
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+          STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+          CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+          TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
+          TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}

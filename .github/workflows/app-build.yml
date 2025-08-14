@@ -1,4 +1,4 @@
-name: Build and Deploy Web Analytics Application
+name: Build Application
 
 on:
   push:
