@@ -38,7 +38,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/
+      
       - name: Terraform Destroy
         uses: ./.github/actions/terraform
         with:
           terraform_command: destroy
+          auto_approve: true
