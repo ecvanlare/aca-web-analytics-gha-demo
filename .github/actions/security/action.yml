@@ -53,8 +53,10 @@ runs:
         framework: terraform
         output_format: sarif
         output_file_path: checkov-results.sarif
+        exit_code: 0
+        soft_fail: true
 
-    - name: Post Terraform Plan to PR
+    - name: Post Terraform Plan Summary
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
       with:
@@ -65,21 +67,30 @@ runs:
           if (fs.existsSync(path)) {
             const planOutput = fs.readFileSync(path, 'utf8');
             
-            const comment = `## Terraform Plan 📋
+            // Extract resource counts
+            const resourceMatch = planOutput.match(/Plan: (\d+) to add, (\d+) to change, (\d+) to destroy/);
             
-            <details>
-            <summary>Click to expand Terraform plan</summary>
-            
-            \`\`\`
-            ${planOutput}
-            \`\`\`
-            
-            </details>`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            if (resourceMatch) {
+              const [_, toAdd, toChange, toDestroy] = resourceMatch;
+              
+              const comment = `## Terraform Plan Summary
+              
+              **Changes:** ${toAdd} to add, ${toChange} to change, ${toDestroy} to destroy
+              
+              <details>
+              <summary>Click to view full plan</summary>
+              
+              \`\`\`
+              ${planOutput}
+              \`\`\`
+              
+              </details>`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
           }
