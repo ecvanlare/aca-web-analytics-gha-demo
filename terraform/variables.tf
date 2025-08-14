@@ -57,7 +57,7 @@ variable "aca_memory" {
 variable "aca_image_name" {
   description = "Docker image name for the container app"
   type        = string
-  default     = "web-analytics"
+  default     = "web-analytics-app"
 }
 
 variable "aca_image_tag" {
