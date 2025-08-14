@@ -1,0 +1,103 @@
+name: Terraform Infrastructure Template
+
+on:
+  workflow_call:
+    inputs:
+      terraform_command:
+        description: 'Terraform operation: plan, apply, destroy, or validate'
+        required: true
+        type: string
+      auto_approve:
+        description: 'Auto-approve operations without confirmation'
+        required: false
+        type: boolean
+        default: false
+      working_directory:
+        description: 'Directory containing Terraform files'
+        required: false
+        type: string
+        default: '.'
+    outputs:
+      plan_file:
+        description: 'Path to Terraform plan file'
+        value: ${{ jobs.terraform.outputs.plan_file }}
+    secrets:
+      AZURE_CLIENT_ID:
+        required: true
+      RESOURCE_GROUP_NAME:
+        required: true
+      STORAGE_ACCOUNT_NAME:
+        required: true
+      CONTAINER_NAME:
+        required: true
+      TFSTATE_KEY:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    outputs:
+      plan_file: ${{ steps.terraform.outputs.plan_file }}
+    
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Authenticate with Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ vars.AZURE_TENANT_ID }}
+        subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.7.0
+
+    - name: Initialize Terraform backend
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        terraform init \
+          -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+          -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+          -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+          -backend-config="key=${{ secrets.TFSTATE_KEY }}"
+
+    - name: Execute Terraform ${{ inputs.terraform_command }}
+      id: terraform
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        if [ "${{ inputs.terraform_command }}" = "validate" ]; then
+          terraform validate
+        elif [ "${{ inputs.terraform_command }}" = "plan" ]; then
+          terraform plan -input=false -out=tfplan -no-color > plan_output.txt || true
+          echo "::group::Terraform Plan Output"
+          cat plan_output.txt
+          echo "::endgroup::"
+          echo "plan_file=tfplan" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.terraform_command }}" = "apply" ]; then
+          terraform apply -auto-approve
+        elif [ "${{ inputs.terraform_command }}" = "destroy" ]; then
+          terraform destroy -auto-approve
+        fi
+
+    - name: Upload Terraform plan file
+      if: inputs.terraform_command == 'plan'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: ${{ inputs.working_directory }}/tfplan
+        retention-days: 1
+
+    - name: Upload Terraform plan output
+      if: inputs.terraform_command == 'plan'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan-output
+        path: ${{ inputs.working_directory }}/plan_output.txt
+        retention-days: 1

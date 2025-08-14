@@ -1,0 +1,43 @@
+name: Validate Infrastructure Changes
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - 'terraform/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform_validate:
+    uses: ./templates/terraform.yml
+    with:
+      terraform_command: validate
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+      STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+      CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+      TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
+
+  terraform_plan:
+    uses: ./templates/terraform.yml
+    needs: terraform_validate
+    with:
+      terraform_command: plan
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+      STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+      CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+      TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
+
+  security_scanning:
+    uses: ./templates/security.yml
+    needs: terraform_plan
+    with:
+      working_directory: terraform/ 

@@ -1,0 +1,16 @@
+name: Destroy Infrastructure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform_destroy:
+    uses: ./templates/terraform.yml
+    with:
+      terraform_command: destroy
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+      STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+      CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+      TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
