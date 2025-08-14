@@ -116,6 +116,8 @@ module "aca" {
   location            = var.location
   resource_group_name = module.resource_group.resource_group_name
 
+  depends_on = [module.acr_pull]
+
   # Container configuration
   image         = "${module.acr.acr_login_server}/${var.aca_image_name}:${var.aca_image_tag}"
   cpu           = var.aca_cpu
