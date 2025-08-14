@@ -1,0 +1,225 @@
+# =============================================================================
+# FOUNDATION RESOURCES
+# =============================================================================
+
+# Resource Group Module
+module "resource_group" {
+  source = "./modules/resource_group"
+
+  name     = var.resource_group_name
+  location = var.location
+  tags     = var.tags
+}
+
+# =============================================================================
+# IDENTITY MANAGEMENT
+# =============================================================================
+
+# Create managed identities for ACR pull and Key Vault access
+resource "azurerm_user_assigned_identity" "identities" {
+  for_each = {
+    acr_pull = "web-analytics-acr-pull"
+    keyvault = "web-analytics-keyvault"
+  }
+
+  name                = each.value
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  tags                = var.tags
+}
+
+# Azure AD Groups for Key Vault access
+resource "azuread_group" "keyvault_groups" {
+  for_each = {
+    admins     = { name = var.admin_group_name, description = "Key Vault Administrators" }
+    developers = { name = var.developer_group_name, description = "Key Vault Developers - Can manage secrets" }
+    viewers    = { name = var.viewer_group_name, description = "Key Vault Viewers - Read-only access" }
+  }
+
+  display_name     = each.value.name
+  mail_nickname    = each.value.name
+  security_enabled = true
+  description      = each.value.description
+}
+
+# =============================================================================
+# NETWORK INFRASTRUCTURE
+# =============================================================================
+
+# Network Infrastructure
+module "network" {
+  source = "./modules/network"
+
+  # Common
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  tags                = var.tags
+
+  # Virtual Network
+  vnet_name     = var.vnet_name
+  address_space = [var.vnet_address_space]
+
+  # Subnets
+  subnets = var.subnets
+
+  # Network Security Groups
+  network_security_groups = var.network_security_groups
+}
+
+# =============================================================================
+# CONTAINER REGISTRY
+# =============================================================================
+
+# Azure Container Registry Module
+module "acr" {
+  source = "./modules/acr"
+
+  resource_group_name = module.resource_group.resource_group_name
+  location            = module.resource_group.resource_group_location
+  name                = var.acr_name
+  sku                 = var.acr_sku
+  admin_enabled       = var.acr_admin_enabled
+  tags                = var.tags
+}
+
+# =============================================================================
+# DATABASE
+# =============================================================================
+
+# PostgreSQL Flexible Server Module
+module "postgresql" {
+  source = "./modules/postgresql"
+
+  name                   = var.postgresql_name
+  resource_group_name    = module.resource_group.resource_group_name
+  location               = module.resource_group.resource_group_location
+  administrator_password = var.postgresql_administrator_password
+  sku_name               = var.postgresql_sku_name
+  storage_mb             = var.postgresql_storage_mb
+  vnet_id                = module.network.vnet_id
+  private_subnet_id      = module.network.subnet_ids["private"]
+  tags                   = var.tags
+}
+
+# =============================================================================
+# ROLE ASSIGNMENTS & PERMISSIONS
+# =============================================================================
+
+# Role assignments configuration
+locals {
+  # Key Vault role assignments
+  keyvault_role_assignments = {
+    admins     = { group = "admins", role = var.keyvault_admin_role }
+    developers = { group = "developers", role = var.keyvault_secrets_officer_role }
+    viewers    = { group = "viewers", role = var.keyvault_reader_role }
+  }
+}
+
+# Identity assignment for ACR pull operations (for ACA)
+module "acr_pull" {
+  source = "./modules/identity"
+
+  scope                = module.acr.acr_id
+  role_definition_name = var.acr_pull_role_name
+  principal_id         = azurerm_user_assigned_identity.identities["acr_pull"].principal_id
+  description          = var.role_assignment_defaults.description
+}
+
+# =============================================================================
+# SECURITY & SECRETS MANAGEMENT
+# =============================================================================
+
+# Key Vault Module for storing all sensitive values
+module "keyvault" {
+  source = "./modules/keyvault"
+
+  key_vault_name             = "kv-${var.environment}-${var.project_name}"
+  location                   = var.location
+  resource_group_name        = module.resource_group.resource_group_name
+  managed_identity_object_id = azurerm_user_assigned_identity.identities["keyvault"].principal_id
+  enable_rbac_authorization  = true
+
+  # Key Vault Configuration
+  soft_delete_retention_days = var.keyvault_soft_delete_retention_days
+  purge_protection_enabled   = var.keyvault_purge_protection_enabled
+  sku_name                   = var.keyvault_sku_name
+  network_acls               = var.keyvault_network_acls
+
+  # Role Names
+  terraform_role_name        = var.keyvault_terraform_role_name
+  managed_identity_role_name = var.keyvault_managed_identity_role_name
+
+  tags = var.tags
+}
+
+# Key Vault Role Assignments
+module "keyvault_user_group_roles" {
+  source   = "./modules/identity"
+  for_each = local.keyvault_role_assignments
+
+  scope                = module.keyvault.key_vault_id
+  role_definition_name = each.value.role
+  principal_id         = azuread_group.keyvault_groups[each.value.group].object_id
+  description          = var.role_assignment_defaults.description
+
+  depends_on = [module.keyvault]
+}
+
+# =============================================================================
+# CONTAINER APP
+# =============================================================================
+
+module "aca" {
+  source = "./modules/aca"
+
+  # Basic configuration
+  name                = var.aca_name
+  location            = var.location
+  resource_group_name = module.resource_group.resource_group_name
+
+  # Container configuration
+  image         = "${module.acr.acr_login_server}/${var.aca_image_name}:${var.aca_image_tag}"
+  cpu           = var.aca_cpu
+  memory        = var.aca_memory
+  revision_mode = var.aca_revision_mode
+
+  # Registry configuration
+  registry_server   = module.acr.acr_login_server
+  registry_identity = azurerm_user_assigned_identity.identities["acr_pull"].id
+
+  # Environment variables
+  environment_variables = {
+    DATABASE_HOST = module.postgresql.database_host
+    DATABASE_NAME = module.postgresql.database_name
+    DATABASE_USER = module.postgresql.database_user
+    NODE_ENV      = var.aca_node_env
+    DATABASE_TYPE = var.aca_database_type
+  }
+
+  # Secrets
+  secrets = {
+    app_secret = {
+      name  = "APP_SECRET"
+      value = var.aca_app_secret
+    }
+    database_password = {
+      name  = "DATABASE_PASSWORD"
+      value = var.postgresql_administrator_password
+    }
+  }
+
+  # Ingress configuration
+  external_enabled           = var.aca_external_enabled
+  target_port                = var.aca_target_port
+  transport                  = var.aca_transport
+  allow_insecure_connections = var.aca_allow_insecure_connections
+  latest_revision            = var.aca_latest_revision
+  percentage                 = var.aca_percentage
+
+  # Log Analytics
+  log_analytics_workspace_sku               = var.aca_log_analytics_workspace_sku
+  log_analytics_workspace_retention_in_days = var.aca_log_analytics_workspace_retention_in_days
+
+  # Tags
+  tags = var.tags
+}
