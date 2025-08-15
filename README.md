@@ -62,7 +62,6 @@ Azure Front Door → Azure Container Apps → PostgreSQL
 - **Database**: PostgreSQL with Prisma ORM
 - **Infrastructure**: Azure Container Apps, ACR, Front Door
 - **CI/CD**: GitHub Actions, Terraform
-- **Charts**: Chart.js
 
 ## License
 
