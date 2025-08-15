@@ -74,3 +74,14 @@ output "aca_environment_name" {
   description = "Name of the Container App Environment"
   value       = module.aca.aca_environment_name
 }
+
+# Front Door Outputs
+output "frontdoor_url" {
+  description = "The public URL of the Azure Front Door endpoint"
+  value       = module.frontdoor.frontdoor_url
+}
+
+output "frontdoor_cname" {
+  description = "The CNAME record for the Front Door endpoint"
+  value       = module.frontdoor.frontdoor_cname
+}

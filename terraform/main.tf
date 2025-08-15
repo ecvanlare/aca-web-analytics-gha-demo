@@ -171,3 +171,27 @@ module "aca" {
   # Tags
   tags = var.tags
 }
+
+# =============================================================================
+# AZURE FRONT DOOR (CLASSIC) - CUSTOM DOMAIN
+# =============================================================================
+
+# Classic Azure Front Door for custom domain
+module "frontdoor" {
+  source = "./modules/frontdoor"
+
+  name                = var.frontdoor_name
+  resource_group_name = module.resource_group.resource_group_name
+
+  endpoint_name      = var.frontdoor_endpoint_name
+  origin_group_name  = var.frontdoor_origin_group_name
+  origin_name        = var.frontdoor_origin_name
+  custom_domain_name = var.frontdoor_custom_domain_name
+  route_name         = var.frontdoor_route_name
+
+  backend_host_header = module.aca.aca_url
+  backend_address     = module.aca.aca_url
+  host_name           = var.frontdoor_host_name
+
+  tags = var.tags
+}

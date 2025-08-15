@@ -321,3 +321,49 @@ variable "role_assignment_defaults" {
   }
 }
 
+# =============================================================================
+# FRONT DOOR VARIABLES
+# =============================================================================
+
+variable "frontdoor_host_name" {
+  description = "Host name for the Azure Front Door endpoint (e.g., analytics.yourdomain.com)"
+  type        = string
+  default     = null
+}
+
+variable "frontdoor_name" {
+  description = "Name of the Azure Front Door"
+  type        = string
+  default     = "fd-web-analytics"
+}
+
+variable "frontdoor_endpoint_name" {
+  description = "Name of the Front Door endpoint"
+  type        = string
+  default     = "web-analytics"
+}
+
+variable "frontdoor_origin_group_name" {
+  description = "Name of the origin group"
+  type        = string
+  default     = "og-web-analytics"
+}
+
+variable "frontdoor_origin_name" {
+  description = "Name of the origin"
+  type        = string
+  default     = "origin-web-analytics"
+}
+
+variable "frontdoor_custom_domain_name" {
+  description = "Name of the custom domain"
+  type        = string
+  default     = "cd-web-analytics"
+}
+
+variable "frontdoor_route_name" {
+  description = "Name of the route"
+  type        = string
+  default     = "route-web-analytics"
+}
+
