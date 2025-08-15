@@ -14,6 +14,16 @@ permissions:
   contents: read
   pull-requests: write
 
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+  STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+  TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
+  TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}
+
 jobs:
   terraform_validate:
     runs-on: ubuntu-latest
@@ -26,15 +36,6 @@ jobs:
         uses: ./.github/actions/terraform
         with:
           terraform_command: validate
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
-          STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
-          CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
-          TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
-          TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}
 
   terraform_plan:
     runs-on: ubuntu-latest
@@ -48,15 +49,6 @@ jobs:
         uses: ./.github/actions/terraform
         with:
           terraform_command: plan
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
-          STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
-          CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
-          TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
-          TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}
 
   security_scanning:
     runs-on: ubuntu-latest
