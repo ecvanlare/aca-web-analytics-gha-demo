@@ -6,6 +6,8 @@ A production-grade web analytics platform built on Azure Container Apps with Ter
 
 Privacy-focused web analytics alternative to Google Analytics with real-time tracking, multi-website support, and advanced reporting.
 
+![Umami Demo](docs/images/umami_demo.gif)
+
 ## Architecture
 
 ```
