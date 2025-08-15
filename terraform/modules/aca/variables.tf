@@ -102,3 +102,15 @@ variable "log_analytics_workspace_retention_in_days" {
   description = "Retention in days of the Log Analytics Workspace"
   type        = number
 }
+
+variable "min_replicas" {
+  description = "Minimum number of replicas for the container app"
+  type        = number
+  default     = 0
+}
+
+variable "max_replicas" {
+  description = "Maximum number of replicas for the container app"
+  type        = number
+  default     = 10
+}

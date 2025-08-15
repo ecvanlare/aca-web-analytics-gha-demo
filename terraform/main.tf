@@ -127,6 +127,8 @@ module "aca" {
   cpu           = var.aca_cpu
   memory        = var.aca_memory
   revision_mode = var.aca_revision_mode
+  min_replicas  = var.aca_min_replicas
+  max_replicas  = var.aca_max_replicas
 
   # Registry configuration
   registry_server   = module.acr.acr_login_server

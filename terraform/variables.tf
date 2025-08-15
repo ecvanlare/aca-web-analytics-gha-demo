@@ -72,6 +72,18 @@ variable "aca_revision_mode" {
   default     = "Single"
 }
 
+variable "aca_min_replicas" {
+  description = "Minimum number of replicas for the container app"
+  type        = number
+  default     = 0
+}
+
+variable "aca_max_replicas" {
+  description = "Maximum number of replicas for the container app"
+  type        = number
+  default     = 10
+}
+
 variable "aca_node_env" {
   description = "Node.js environment for the application"
   type        = string
