@@ -322,9 +322,8 @@ variable "role_assignment_defaults" {
 
 # Front Door Variables
 variable "frontdoor_host_name" {
-  description = "Host name for the Azure Front Door endpoint (e.g., analytics.yourdomain.com)"
+  description = "Host name for the Azure Front Door endpoint"
   type        = string
-  default     = null
 }
 
 variable "frontdoor_name" {

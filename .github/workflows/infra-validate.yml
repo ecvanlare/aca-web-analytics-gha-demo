@@ -23,6 +23,7 @@ env:
   CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
   TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
   TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}
+  TF_VAR_frontdoor_host_name: ${{ secrets.FRONTDOOR_HOST_NAME }}
 
 jobs:
   terraform_validate:
