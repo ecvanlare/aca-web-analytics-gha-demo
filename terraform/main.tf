@@ -27,8 +27,6 @@ resource "azurerm_user_assigned_identity" "identities" {
   tags                = var.tags
 }
 
-
-
 # =============================================================================
 # NETWORK INFRASTRUCTURE
 # =============================================================================
@@ -95,8 +93,6 @@ module "postgresql" {
 # =============================================================================
 # ROLE ASSIGNMENTS & PERMISSIONS
 # =============================================================================
-
-
 
 # Identity assignment for ACR pull operations (for ACA)
 module "acr_pull" {
