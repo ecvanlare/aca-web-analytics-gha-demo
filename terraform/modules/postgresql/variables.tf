@@ -66,9 +66,10 @@ variable "vnet_id" {
   type        = string
 }
 
-variable "private_subnet_id" {
-  description = "Private subnet ID for private endpoint"
-  type        = string
+variable "use_private_endpoint" {
+  description = "Use private endpoint for PostgreSQL (false = public access with firewall)"
+  type        = bool
+  default     = false
 }
 
 variable "server_configurations" {
@@ -81,4 +82,34 @@ variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "maintenance_window" {
+  description = "Maintenance window configuration for PostgreSQL"
+  type = object({
+    day_of_week  = number
+    start_hour   = number
+    start_minute = number
+  })
+  default = {
+    day_of_week  = 0 # Sunday
+    start_hour   = 2 # 2 AM
+    start_minute = 0
+  }
+}
+
+variable "firewall_rules" {
+  description = "Firewall rules for PostgreSQL"
+  type = list(object({
+    name             = string
+    start_ip_address = string
+    end_ip_address   = string
+  }))
+  default = [
+    {
+      name             = "allow-azure-services"
+      start_ip_address = "0.0.0.0"
+      end_ip_address   = "0.0.0.0"
+    }
+  ]
 }

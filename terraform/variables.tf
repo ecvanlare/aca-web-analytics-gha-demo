@@ -153,24 +153,24 @@ variable "vnet_address_space" {
 }
 
 variable "subnets" {
-  description = "Subnet configuration for PostgreSQL"
+  description = "Subnet configuration for the application"
   type = map(object({
     name              = string
     address_prefixes  = list(string)
     service_endpoints = list(string)
   }))
   default = {
-    private = {
-      name              = "snet-private"
+    app = {
+      name              = "snet-app"
       address_prefixes  = ["10.0.17.0/24"]
-      service_endpoints = ["Microsoft.ContainerRegistry", "Microsoft.Sql"]
+      service_endpoints = ["Microsoft.ContainerRegistry"]
     }
   }
 }
 
 # NSG Configuration
 variable "network_security_groups" {
-  description = "Network security group for private subnet"
+  description = "Network security group for application subnet"
   type = map(object({
     name = string
     rules = map(object({
@@ -186,8 +186,8 @@ variable "network_security_groups" {
     }))
   }))
   default = {
-    private = {
-      name = "nsg-private"
+    app = {
+      name = "nsg-app"
       rules = {
         allow_outbound_acr = {
           priority                   = 100
@@ -201,27 +201,16 @@ variable "network_security_groups" {
           description                = "Allow outbound HTTPS to ACR"
         }
 
-        allow_postgresql = {
+        allow_postgresql_outbound = {
           priority                   = 200
-          direction                  = "Inbound"
+          direction                  = "Outbound"
           access                     = "Allow"
           protocol                   = "Tcp"
           source_port_range          = "*"
           destination_port_range     = "5432"
           source_address_prefix      = "VirtualNetwork"
-          destination_address_prefix = "*"
-          description                = "Allow PostgreSQL access from VNet"
-        }
-        deny_internet = {
-          priority                   = 3000
-          direction                  = "Outbound"
-          access                     = "Deny"
-          protocol                   = "*"
-          source_port_range          = "*"
-          destination_port_range     = "*"
           destination_address_prefix = "Internet"
-          source_address_prefix      = "*"
-          description                = "Deny all internet access"
+          description                = "Allow outbound PostgreSQL access to public database"
         }
       }
     }
@@ -270,6 +259,36 @@ variable "postgresql_storage_mb" {
   description = "Storage size in MB for PostgreSQL"
   type        = number
   default     = 32768
+}
+
+variable "postgresql_maintenance_window" {
+  description = "Maintenance window configuration for PostgreSQL"
+  type = object({
+    day_of_week  = number
+    start_hour   = number
+    start_minute = number
+  })
+  default = {
+    day_of_week  = 0 # Sunday
+    start_hour   = 2 # 2 AM
+    start_minute = 0
+  }
+}
+
+variable "postgresql_firewall_rules" {
+  description = "Firewall rules for PostgreSQL"
+  type = list(object({
+    name             = string
+    start_ip_address = string
+    end_ip_address   = string
+  }))
+  default = [
+    {
+      name             = "allow-azure-services"
+      start_ip_address = "0.0.0.0"
+      end_ip_address   = "0.0.0.0"
+    }
+  ]
 }
 
 # Identity Role Names

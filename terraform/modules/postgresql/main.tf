@@ -13,7 +13,24 @@ resource "azurerm_postgresql_flexible_server" "main" {
   backup_retention_days        = var.backup_retention_days
   geo_redundant_backup_enabled = var.geo_redundant_backup_enabled
 
+  # Maintenance window configuration
+  maintenance_window {
+    day_of_week  = var.maintenance_window.day_of_week
+    start_hour   = var.maintenance_window.start_hour
+    start_minute = var.maintenance_window.start_minute
+  }
+
   tags = var.tags
+}
+
+# PostgreSQL Firewall Rules
+resource "azurerm_postgresql_flexible_server_firewall_rule" "rules" {
+  for_each = var.use_private_endpoint == false ? { for rule in var.firewall_rules : rule.name => rule } : {}
+
+  name             = each.value.name
+  server_id        = azurerm_postgresql_flexible_server.main.id
+  start_ip_address = each.value.start_ip_address
+  end_ip_address   = each.value.end_ip_address
 }
 
 # PostgreSQL Flexible Server Configuration
@@ -25,40 +42,4 @@ resource "azurerm_postgresql_flexible_server_configuration" "main" {
   value     = each.value
 }
 
-# Private DNS Zone for PostgreSQL
-resource "azurerm_private_dns_zone" "postgresql" {
-  name                = "privatelink.postgres.database.azure.com"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
 
-# Link Private DNS Zone to VNet
-resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
-  name                  = "postgresql-dns-link"
-  private_dns_zone_name = azurerm_private_dns_zone.postgresql.name
-  resource_group_name   = var.resource_group_name
-  virtual_network_id    = var.vnet_id
-  tags                  = var.tags
-}
-
-# Private Endpoint for PostgreSQL
-resource "azurerm_private_endpoint" "postgresql" {
-  name                = "${var.name}-pe"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  subnet_id           = var.private_subnet_id
-
-  private_service_connection {
-    name                           = "${var.name}-psc"
-    private_connection_resource_id = azurerm_postgresql_flexible_server.main.id
-    is_manual_connection           = false
-    subresource_names              = ["postgresqlServer"]
-  }
-
-  private_dns_zone_group {
-    name                 = "postgresql-dns-group"
-    private_dns_zone_ids = [azurerm_private_dns_zone.postgresql.id]
-  }
-
-  tags = var.tags
-}

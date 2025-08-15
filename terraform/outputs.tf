@@ -15,9 +15,9 @@ output "vnet_name" {
   value       = module.network.vnet_name
 }
 
-output "private_subnet_id" {
-  description = "The ID of the private subnet (for PostgreSQL)"
-  value       = module.network.subnet_ids["private"]
+output "app_subnet_id" {
+  description = "The ID of the app subnet (for Container App)"
+  value       = module.network.subnet_ids["app"]
 }
 
 # ACR Outputs

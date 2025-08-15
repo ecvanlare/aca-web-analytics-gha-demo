@@ -84,8 +84,12 @@ module "postgresql" {
   sku_name               = var.postgresql_sku_name
   storage_mb             = var.postgresql_storage_mb
   vnet_id                = module.network.vnet_id
-  private_subnet_id      = module.network.subnet_ids["private"]
-  tags                   = var.tags
+
+  # Configurable maintenance window and firewall rules
+  maintenance_window = var.postgresql_maintenance_window
+  firewall_rules     = var.postgresql_firewall_rules
+
+  tags = var.tags
 }
 
 # =============================================================================
@@ -135,6 +139,7 @@ module "aca" {
     DATABASE_USER = module.postgresql.database_user
     NODE_ENV      = var.aca_node_env
     DATABASE_TYPE = var.aca_database_type
+    DATABASE_URL  = "postgresql://${module.postgresql.database_user}:${var.postgresql_administrator_password}@${module.postgresql.database_host}:5432/${module.postgresql.database_name}?sslmode=require"
   }
 
   # Secrets

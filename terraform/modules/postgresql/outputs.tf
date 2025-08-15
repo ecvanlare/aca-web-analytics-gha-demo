@@ -18,11 +18,6 @@ output "administrator_login" {
   value       = azurerm_postgresql_flexible_server.main.administrator_login
 }
 
-output "private_endpoint_ip" {
-  description = "The private IP address of the PostgreSQL private endpoint"
-  value       = azurerm_private_endpoint.postgresql.private_service_connection[0].private_ip_address
-}
-
 output "connection_string" {
   description = "Connection string for PostgreSQL (without password)"
   value       = "postgresql://${azurerm_postgresql_flexible_server.main.administrator_login}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/postgres"

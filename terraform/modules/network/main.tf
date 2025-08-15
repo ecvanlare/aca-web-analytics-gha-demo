@@ -42,8 +42,8 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-# Associate NSG with private subnet
-resource "azurerm_subnet_network_security_group_association" "private" {
-  subnet_id                 = azurerm_subnet.subnets["private"].id
-  network_security_group_id = azurerm_network_security_group.nsg["private"].id
+# Associate NSG with app subnet
+resource "azurerm_subnet_network_security_group_association" "app" {
+  subnet_id                 = azurerm_subnet.subnets["app"].id
+  network_security_group_id = azurerm_network_security_group.nsg["app"].id
 } 
