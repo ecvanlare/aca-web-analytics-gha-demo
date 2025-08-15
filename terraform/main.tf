@@ -165,7 +165,7 @@ module "aca" {
 }
 
 # =============================================================================
-# AZURE FRONT DOOR (CLASSIC) - CUSTOM DOMAIN
+# AZURE FRONT DOOR
 # =============================================================================
 
 # Classic Azure Front Door for custom domain
