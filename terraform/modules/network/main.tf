@@ -6,7 +6,7 @@ resource "azurerm_virtual_network" "vnet" {
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "subnets" {
+resource "azurerm_subnet" "subnet" {
   for_each = var.subnets
 
   name                 = each.value.name
@@ -43,7 +43,7 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 # Associate NSG with app subnet
-resource "azurerm_subnet_network_security_group_association" "app" {
-  subnet_id                 = azurerm_subnet.subnets["app"].id
+resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
+  subnet_id                 = azurerm_subnet.subnet["app"].id
   network_security_group_id = azurerm_network_security_group.nsg["app"].id
 } 

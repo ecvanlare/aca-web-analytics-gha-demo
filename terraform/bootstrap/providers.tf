@@ -1,6 +1,3 @@
-# Terraform configuration for Web Analytics (Umami) bootstrap infrastructure
-# This file defines the required providers and their versions
-
 terraform {
   required_version = ">= 1.12.1"
 

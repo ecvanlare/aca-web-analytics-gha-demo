@@ -1,4 +1,3 @@
-# Outputs for Web Analytics bootstrap infrastructure
 
 output "resource_group_name" {
   description = "The name of the bootstrap resource group"

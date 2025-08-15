@@ -1,5 +1,3 @@
-# Bootstrap infrastructure for Web Analytics (Umami) project
-# This creates the foundational Azure resources needed for Terraform state management
 
 resource "azurerm_resource_group" "infrastructure" {
   name     = var.resource_group_name

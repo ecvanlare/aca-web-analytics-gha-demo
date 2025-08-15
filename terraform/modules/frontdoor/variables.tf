@@ -1,4 +1,3 @@
-# Basic Configuration
 variable "name" {
   description = "Name of the Azure Front Door"
   type        = string

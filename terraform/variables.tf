@@ -1,4 +1,3 @@
-
 # Resource Group Variables
 variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"

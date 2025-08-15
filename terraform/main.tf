@@ -1,7 +1,3 @@
-# =============================================================================
-# FOUNDATION RESOURCES
-# =============================================================================
-
 # Resource Group Module
 module "resource_group" {
   source = "./modules/resource_group"
@@ -95,7 +91,7 @@ module "postgresql" {
 # =============================================================================
 
 # Identity assignment for ACR pull operations (for ACA)
-module "acr_pull" {
+module "identity" {
   source = "./modules/identity"
 
   scope                = module.acr.acr_id
@@ -116,7 +112,7 @@ module "aca" {
   location            = var.location
   resource_group_name = module.resource_group.resource_group_name
 
-  depends_on = [module.acr_pull]
+  depends_on = [module.identity]
 
   # Container configuration
   image         = "${module.acr.acr_login_server}/${var.aca_image_name}:${var.aca_image_tag}"
