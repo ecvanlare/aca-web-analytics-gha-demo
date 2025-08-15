@@ -1,0 +1,56 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  RESOURCE_GROUP_NAME: ${{ secrets.RESOURCE_GROUP_NAME }}
+  STORAGE_ACCOUNT_NAME: ${{ secrets.STORAGE_ACCOUNT_NAME }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+  TFSTATE_KEY: ${{ secrets.TFSTATE_KEY }}
+  TF_VAR_postgresql_administrator_password: ${{ secrets.POSTGRESQL_ADMIN_PASSWORD }}
+
+jobs:
+  terraform_plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Terraform Plan
+        uses: ./.github/actions/terraform
+        with:
+          terraform_command: plan
+
+  terraform_apply:
+    runs-on: ubuntu-latest
+    needs: terraform_plan
+    environment: prod
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/
+      
+      - name: Terraform Apply
+        uses: ./.github/actions/terraform
+        with:
+          terraform_command: apply
+          auto_approve: true
