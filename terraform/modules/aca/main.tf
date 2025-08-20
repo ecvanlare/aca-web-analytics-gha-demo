@@ -1,4 +1,4 @@
-resource "azurerm_log_analytics_workspace" "workspace" {
+resource "azurerm_log_analytics_workspace" "this" {
   name                = "${var.name}-log-analytics-workspace"
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -8,16 +8,16 @@ resource "azurerm_log_analytics_workspace" "workspace" {
   tags = var.tags
 }
 
-resource "azurerm_container_app_environment" "environment" {
+resource "azurerm_container_app_environment" "this" {
   name                       = "${var.name}-container-app-environment"
   location                   = var.location
   resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.workspace.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
 }
 
-resource "azurerm_container_app" "app" {
+resource "azurerm_container_app" "this" {
   name                         = "${var.name}-container-app"
-  container_app_environment_id = azurerm_container_app_environment.environment.id
+  container_app_environment_id = azurerm_container_app_environment.this.id
   resource_group_name          = var.resource_group_name
   revision_mode                = var.revision_mode
 

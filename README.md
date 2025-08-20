@@ -10,16 +10,56 @@ Privacy-focused web analytics alternative to Google Analytics with real-time tra
 
 ## Architecture
 
+![ACA Architecture](docs/images/aca-architecture.png)
+
+### Key Components
+
+- **Azure Front Door**: Global CDN and load balancer with built-in DDoS protection and WAF
+- **Azure Container Apps**: Serverless container platform hosting the web analytics application
+- **Azure Container Registry (ACR)**: Private container registry for storing application images
+- **PostgreSQL Flexible Server**: Managed database service with high availability
+- **Azure Virtual Network**: Network isolation and security with private subnets
+- **Network Security Groups**: Firewall rules for controlling network traffic
+- **Managed Identity**: Secure authentication for container apps to access Azure resources
+- **Log Analytics**: Centralized logging and monitoring
+
+
+
+### Project Structure
+
 ```
-Azure Front Door → Azure Container Apps → PostgreSQL
+aca-web-analytics-gha-demo/
+├── .github/workflows/     # CI/CD pipelines
+├── src/                   # Next.js application
+├── terraform/            # Infrastructure as Code
+│   ├── modules/          # Reusable Terraform modules
+│   └── bootstrap/        # Initial infrastructure setup
+├── db/                   # Database migrations
+├── scripts/              # Build and deployment utilities
+└── docs/                 # Documentation and images
 ```
 
-## Quick Start
+### Platform Integration
+
+#### Infrastructure Provisioning
+Terraform pipelines for automated Azure resource deployment with modular architecture and state management.
+
+#### Security Pipelines
+Code quality checks, dependency scanning, and security validation through automated CI/CD workflows.
+
+#### Build Pipeline
+GitHub Actions workflows for container builds, testing, and deployment automation with multi-stage processes.
+
+#### DNS Management
+Azure DNS configuration with custom domain setup, SSL certificate management, and traffic routing.
+
+#### Monitoring
+Azure Monitor integration, Log Analytics workspace, and application performance insights with alerting.
+
+## Local Development
 
 ### Prerequisites
 - Docker and Docker Compose
-
-### Local Development
 
 1. **Clone and setup**
    ```bash
@@ -33,35 +73,6 @@ Azure Front Door → Azure Container Apps → PostgreSQL
    docker-compose up
    ```
 
-### Deployment
-
-1. **Deploy infrastructure**
-   ```bash
-   cd terraform
-   terraform init
-   terraform plan
-   terraform apply
-   ```
-
-2. **Application deploys automatically** via GitHub Actions on push to main
-
-## Project Structure
-
-```
-.
-├── .github/workflows/    # CI/CD pipelines
-├── src/                 # Next.js application
-├── terraform/           # Infrastructure as Code
-├── db/                  # Database migrations
-└── scripts/            # Build utilities
-```
-
-## Key Technologies
-
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Infrastructure**: Azure Container Apps, ACR, Front Door
-- **CI/CD**: GitHub Actions, Terraform
 
 ## License
 

@@ -1,0 +1,27 @@
+name: Dependency Check
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  deps-check:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check for vulnerabilities
+        run: pnpm audit --audit-level=moderate
+
+      - name: Check for outdated dependencies
+        run: pnpm outdated || true
