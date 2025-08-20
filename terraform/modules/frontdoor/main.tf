@@ -1,18 +1,18 @@
-resource "azurerm_cdn_frontdoor_profile" "profile" {
+resource "azurerm_cdn_frontdoor_profile" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
   sku_name            = var.sku_name
   tags                = var.tags
 }
 
-resource "azurerm_cdn_frontdoor_endpoint" "endpoint" {
+resource "azurerm_cdn_frontdoor_endpoint" "this" {
   name                     = var.endpoint_name
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.profile.id
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.this.id
 }
 
-resource "azurerm_cdn_frontdoor_origin_group" "origin_group" {
+resource "azurerm_cdn_frontdoor_origin_group" "this" {
   name                     = var.origin_group_name
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.profile.id
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.this.id
   session_affinity_enabled = var.session_affinity_enabled
 
   load_balancing {
@@ -27,9 +27,9 @@ resource "azurerm_cdn_frontdoor_origin_group" "origin_group" {
   }
 }
 
-resource "azurerm_cdn_frontdoor_origin" "origin" {
+resource "azurerm_cdn_frontdoor_origin" "this" {
   name                          = var.origin_name
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.origin_group.id
+  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.this.id
   enabled                       = true
 
   host_name          = var.backend_address
@@ -43,9 +43,9 @@ resource "azurerm_cdn_frontdoor_origin" "origin" {
   certificate_name_check_enabled = true
 }
 
-resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
+resource "azurerm_cdn_frontdoor_custom_domain" "this" {
   name                     = var.custom_domain_name
-  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.profile.id
+  cdn_frontdoor_profile_id = azurerm_cdn_frontdoor_profile.this.id
   host_name                = var.host_name
 
   tls {
@@ -53,10 +53,10 @@ resource "azurerm_cdn_frontdoor_custom_domain" "custom_domain" {
   }
 }
 
-resource "azurerm_cdn_frontdoor_route" "route" {
+resource "azurerm_cdn_frontdoor_route" "this" {
   name                          = var.route_name
-  cdn_frontdoor_endpoint_id     = azurerm_cdn_frontdoor_endpoint.endpoint.id
-  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.origin_group.id
+  cdn_frontdoor_endpoint_id     = azurerm_cdn_frontdoor_endpoint.this.id
+  cdn_frontdoor_origin_group_id = azurerm_cdn_frontdoor_origin_group.this.id
   enabled                       = true
 
   forwarding_protocol    = var.forwarding_protocol
@@ -64,7 +64,7 @@ resource "azurerm_cdn_frontdoor_route" "route" {
   patterns_to_match      = var.patterns_to_match
   supported_protocols    = var.accepted_protocols
 
-  cdn_frontdoor_origin_ids = [azurerm_cdn_frontdoor_origin.origin.id]
+  cdn_frontdoor_origin_ids = [azurerm_cdn_frontdoor_origin.this.id]
 
-  cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.custom_domain.id]
+  cdn_frontdoor_custom_domain_ids = [azurerm_cdn_frontdoor_custom_domain.this.id]
 }

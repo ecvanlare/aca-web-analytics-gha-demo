@@ -1,4 +1,4 @@
-resource "azurerm_virtual_network" "vnet" {
+resource "azurerm_virtual_network" "this" {
   name                = var.vnet_name
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -6,18 +6,18 @@ resource "azurerm_virtual_network" "vnet" {
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "subnet" {
+resource "azurerm_subnet" "this" {
   for_each = var.subnets
 
   name                 = each.value.name
   resource_group_name  = var.resource_group_name
-  virtual_network_name = azurerm_virtual_network.vnet.name
+  virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = each.value.address_prefixes
   service_endpoints    = each.value.service_endpoints
 }
 
 # Network Security Groups
-resource "azurerm_network_security_group" "nsg" {
+resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
   name                = each.value.name
@@ -43,7 +43,7 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 # Associate NSG with app subnet
-resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
-  subnet_id                 = azurerm_subnet.subnet["app"].id
-  network_security_group_id = azurerm_network_security_group.nsg["app"].id
+resource "azurerm_subnet_network_security_group_association" "this" {
+  subnet_id                 = azurerm_subnet.this["app"].id
+  network_security_group_id = azurerm_network_security_group.this["app"].id
 } 
