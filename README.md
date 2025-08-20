@@ -56,12 +56,10 @@ Azure DNS configuration with custom domain setup, SSL certificate management, an
 #### Monitoring
 Azure Monitor integration, Log Analytics workspace, and application performance insights with alerting.
 
-## Quick Start
+## Local Development
 
 ### Prerequisites
 - Docker and Docker Compose
-
-### Local Development
 
 1. **Clone and setup**
    ```bash
@@ -75,28 +73,6 @@ Azure Monitor integration, Log Analytics workspace, and application performance 
    docker-compose up
    ```
 
-### Deployment
-
-1. **Deploy infrastructure**
-   ```bash
-   cd terraform
-   terraform init
-   terraform plan
-   terraform apply
-   ```
-
-2. **Application deploys automatically** via GitHub Actions on push to main
-
-## Project Structure
-
-```
-.
-├── .github/workflows/    # CI/CD pipelines
-├── src/                 # Next.js application
-├── terraform/           # Infrastructure as Code
-├── db/                  # Database migrations
-└── scripts/            # Build utilities
-```
 
 ## License
 
